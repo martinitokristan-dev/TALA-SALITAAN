@@ -597,3 +597,23 @@
   .pl-tool,
   .pl-tries { min-height: 42px; padding: 4px 12px; }
 }
+
+/* ── Play header on phones: LEVEL button, title and count never overlap ──
+   The title takes the space between the two buttons and wraps instead of spilling over them. */
+.pl-header > * { min-width: 0; }
+.pl-nowrap { white-space: nowrap; }
+.pl-title { max-width: 100%; }
+.pl-title-top,
+.pl-title-main { max-width: 100%; text-wrap: balance; }
+@media (max-width: 520px) {
+  .pl-header { gap: 8px; padding-left: 10px; padding-right: 10px; }
+  .pl-header .lv-back { padding: 7px 9px 5px; font-size: 9px; }
+  .pl-title { padding: 6px 10px; border-radius: 12px; }
+  .pl-title-top { font-size: 12px; line-height: 1.2; }
+  .pl-title-main { font-size: clamp(9px, 2.7vw, 12px); line-height: 1.35; white-space: normal; }
+  .pl-count { padding: 6px 8px; font-size: 10px; }
+}
+@media (max-width: 360px) {
+  .pl-header { gap: 6px; padding-left: 8px; padding-right: 8px; }
+  .pl-title-top { font-size: 11px; }
+}

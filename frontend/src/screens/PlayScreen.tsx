@@ -5,7 +5,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { ApiError, peek, pupilApi, sesyonPath, tokens } from '../lib/api'
 import { buildLevels, STAGE_TASK, type Level } from '../lib/levels'
 import type { AnswerResponse, JumbleItem, PictureItem, SentenceGroup, SesyonPayload, SituationItem } from '../lib/types'
-import { play } from '../lib/sound'
+import { play, playAfter, soundEnded, stopSound } from '../lib/sound'
 import { JumbleStage, PictureStage } from './PlayStages'
 import { findRound, SentenceStage, SituationStage } from './StageTwoOthers'
 import { Icon } from '../ui/Icon'
@@ -23,10 +23,16 @@ function useFeedbackClips() {
   useEffect(() => {
     pupilApi.feedbackClips().then((c) => (clips.current = { ...emptyFeedbackClips(), ...c }), () => undefined)
   }, [])
-  return (res: AnswerResponse, delay = 0) => {
+  /**
+   * 'now': play at once (wrong answers). 'after': wait for the sound playing now (the word's
+   * pronunciation) to end first. Resolves when the clip has ended (at once if there is none).
+   */
+  return useCallback((res: AnswerResponse, when: 'now' | 'after' = 'now'): Promise<void> => {
     const list = clips.current[feedbackKindFor(res)] ?? []
-    if (list.length) window.setTimeout(() => play(list[Math.floor(Math.random() * list.length)]), delay)
-  }
+    const url = list.length ? list[Math.floor(Math.random() * list.length)] : null
+    if (when === 'after') return playAfter(url)
+    return url ? play(url) : Promise.resolve()
+  }, [])
 }
 
 /* ── Screen ─────────────────────────────────────────────── */
@@ -36,6 +42,8 @@ interface Finished {
   level: Level
   /** Castle 2 Stage 2: stars of the whole round of 3 sentences. */
   summary?: { stars: number; max: number }
+  /** The teacher's praise is still playing: SUSUNOD waits for it. */
+  speaking?: boolean
 }
 
 /**
@@ -56,6 +64,10 @@ export function PlayScreen() {
   const [error, setError] = useState<string | null>(null)
   const [finished, setFinished] = useState<Finished | null>(null)
   const feedback = useFeedbackClips()
+  // Bumped when the pupil moves on, so a late "praise ended" never changes the next level.
+  const doneSeq = useRef(0)
+  // Leaving the level (LEVEL button, back gesture): no voice keeps talking over the level path.
+  useEffect(() => () => stopSound(), [])
 
   const load = useCallback(() => {
     return pupilApi.sesyon(cycle, sesyon).then(
@@ -99,6 +111,9 @@ export function PlayScreen() {
   if (!level && !finished) return <Navigate to={`/mapa/${cycle}/${sesyon}`} replace />
 
   async function next() {
+    if (finished?.speaking) return
+    stopSound()
+    doneSeq.current++
     const res = finished?.res
     const wasStage = finished?.level.stage
     setFinished(null)
@@ -123,9 +138,20 @@ export function PlayScreen() {
     setParams({ level: String(nextLevel.number) }, { replace: true })
   }
 
+  /**
+   * One item finished. The word's pronunciation (Castle 1 Stage 1) ends first; then the popup
+   * with the written praise and the stars appears together with the spoken praise, and
+   * SUSUNOD opens when the praise has ended.
+   */
   function onDone(res: AnswerResponse, l: Level) {
-    feedback(res, 700)
-    setFinished({ res, level: l })
+    const seq = ++doneSeq.current
+    soundEnded().then(() => {
+      if (seq !== doneSeq.current) return
+      setFinished({ res, level: l, speaking: true })
+      feedback(res, 'after').then(() => {
+        if (seq === doneSeq.current) setFinished((f) => (f && f.res === res ? { ...f, speaking: false } : f))
+      })
+    })
   }
 
   const shown = finished?.level ?? level!
@@ -146,11 +172,12 @@ export function PlayScreen() {
           <span>LEVEL</span>
         </button>
         <div className="pl-title">
+          {/* Each part stays whole when the title wraps on a small phone. */}
           <span className="pl-title-top">
-            {data.cycle_title} · SESYON {sesyon}
+            <span className="pl-nowrap">{data.cycle_title} ·</span> <span className="pl-nowrap">SESYON {sesyon}</span>
           </span>
           <span className="pl-title-main">
-            LEVEL {shown.number} · STAGE {shown.stage}
+            <span className="pl-nowrap">LEVEL {shown.number} ·</span> <span className="pl-nowrap">STAGE {shown.stage}</span>
           </span>
         </div>
         <div className="pl-count">
@@ -189,7 +216,7 @@ export function PlayScreen() {
             sesyon={sesyon}
             maxAttempts={data.max_attempts}
             maxStars={data.max_stars_per_item}
-            onRight={(r) => feedback(r, 300)}
+            onRight={(r) => feedback(r)}
             onWrong={(r) => feedback(r)}
             onRoundDone={(res, summary) => setFinished({ res, level: shown, summary })}
           />
@@ -265,8 +292,15 @@ function ResultPopup({ finished, maxStars, onNext }: { finished: Finished; maxSt
         {res.sesyon_complete && <p className="lv-modal-note">Tapos na ang sesyon! Lahat ng bituin: {res.sesyon_stars}</p>}
         {res.stage_complete && !res.sesyon_complete && <p className="lv-modal-note">Tapos na ang Stage 1! Susunod: Stage 2.</p>}
         <div className="lv-modal-actions">
-          <PixelButton size="small" mushroom onClick={onNext} autoFocus>
-            {res.sesyon_complete ? 'BUMALIK SA MAPA' : res.stage_complete && finished.level.stage === 1 ? 'STAGE 2 NA!' : 'SUSUNOD'}
+          {/* Waits until the teacher's praise has been said in full. */}
+          <PixelButton size="small" mushroom onClick={onNext} autoFocus disabled={!!finished.speaking} aria-busy={!!finished.speaking}>
+            {finished.speaking
+              ? 'SANDALI…'
+              : res.sesyon_complete
+                ? 'BUMALIK SA MAPA'
+                : res.stage_complete && finished.level.stage === 1
+                  ? 'STAGE 2 NA!'
+                  : 'SUSUNOD'}
           </PixelButton>
         </div>
       </div>

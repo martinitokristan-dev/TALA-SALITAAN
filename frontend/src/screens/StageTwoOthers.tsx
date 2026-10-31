@@ -19,6 +19,8 @@ import { Star } from '../ui/StarRow'
 import { Tries } from '../ui/Tries'
 import { SENTENCES_PER_ROUND } from '../lib/levels'
 
+const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms))
+
 /** Which group and round of 3 sentences holds this word (Castle 2, Stage 2). */
 export function findRound(groups: SentenceGroup[], wordId: number) {
   for (const g of groups) {
@@ -120,8 +122,9 @@ export function SentenceStage({
   maxStars: number
   onRoundDone: (last: AnswerResponse, summary: RoundSummary) => void
   /** each answer, so the matching teacher clip plays (wrong with 2 / 1 tries left, missed) */
-  onWrong: (r: AnswerResponse) => void
-  onRight: (r: AnswerResponse) => void
+  onWrong: (r: AnswerResponse) => Promise<void>
+  /** Resolves when the teacher's praise has ended (at once if there is no clip). */
+  onRight: (r: AnswerResponse) => Promise<void>
 }) {
   const round = useMemo(() => findRound(groups, wordId), [groups, wordId])
   const sentences = useMemo(() => (round ? round.group.sentences.slice(round.start, round.start + SENTENCES_PER_ROUND) : []), [round])
@@ -159,17 +162,21 @@ export function SentenceStage({
       if (res.finished) {
         const nextDone = { ...done, [sentenceId]: { stars: res.stars, correct: res.correct } }
         setDone(nextDone)
+        // The "Tama!" stars and text stay up while the praise is spoken (at least 1.3 s), and the
+        // round only ends after the voice has finished.
+        let spoken: Promise<void>
         if (res.correct) {
-          onRight(res)
-          setCheer({ stars: res.stars, line: feedbackLine(res) })
-          window.setTimeout(() => setCheer(null), 1300)
+          spoken = onRight(res)
+          const cheerLine = { stars: res.stars, line: feedbackLine(res) }
+          setCheer(cheerLine)
+          Promise.all([spoken, wait(1300)]).then(() => setCheer((c) => (c === cheerLine ? null : c)))
         } else {
-          onWrong(res)
+          spoken = onWrong(res)
           setMessage(`${FEEDBACK_LINE.naubos} Ang tamang sagot: ${res.correct_answer?.word?.toUpperCase()}`)
         }
         if (sentences.every((s) => nextDone[s.word_id])) {
           const stars = sentences.reduce((sum, s) => sum + (nextDone[s.word_id]?.stars ?? 0), 0)
-          window.setTimeout(() => onRoundDone(res, { stars, max: sentences.length * maxStars }), 1500)
+          Promise.all([spoken, wait(1500)]).then(() => onRoundDone(res, { stars, max: sentences.length * maxStars }))
         }
       } else {
         onWrong(res)
