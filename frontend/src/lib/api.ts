@@ -14,8 +14,15 @@ import type { CharacterKind } from './types'
 import type { FeedbackClipUrls, FeedbackKind } from './feedback'
 import { cache } from './cache'
 
-// Same origin in development (Vite proxies /api to Laravel). Set VITE_API_URL for other setups.
-const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? '/api'
+// Same origin in development (Vite proxies /api to Laravel). Set VITE_API_URL for other setups,
+// e.g. https://<service>.onrender.com/api. A URL without the /api part gets it added, because every
+// Laravel route (and the CORS rules) live under /api.
+function apiBase(raw: string | undefined): string {
+  const url = raw?.trim().replace(/\/+$/, '')
+  if (!url) return '/api'
+  return /\/api$/.test(url) ? url : `${url}/api`
+}
+const BASE = apiBase(import.meta.env.VITE_API_URL as string | undefined)
 
 const TOKEN_KEYS = { teacher: 'tala.teacherToken', pupil: 'tala.pupilToken' } as const
 export type Role = keyof typeof TOKEN_KEYS
