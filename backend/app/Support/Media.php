@@ -83,9 +83,14 @@ class Media
             'api_key' => $cloud['key'],
             'signature' => self::sign($params, $cloud['secret']),
         ]);
-        if (! $response->successful()) {
+        // Cloudinary answers 200 with {"result":"not found"} when the id is wrong, so check the body too.
+        if (! $response->successful() || $response->json('result') !== 'ok') {
             // Not fatal: the record is gone either way; the file just stays in Cloudinary.
-            Log::warning('Cloudinary delete failed', ['status' => $response->status(), 'public_id' => $m[2]]);
+            Log::warning('Cloudinary delete failed', [
+                'status' => $response->status(),
+                'result' => $response->json('result') ?? $response->json('error.message'),
+                'public_id' => $m[2],
+            ]);
         }
     }
 
