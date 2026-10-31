@@ -17,6 +17,10 @@ RUN a2enmod rewrite headers \
     && a2enconf workers \
     && { echo 'opcache.enable=1'; echo 'opcache.memory_consumption=96'; echo 'opcache.validate_timestamps=0'; echo 'upload_max_filesize=12M'; echo 'post_max_size=14M'; echo 'memory_limit=192M'; } > /usr/local/etc/php/conf.d/app.ini
 
+# TiDB Cloud refuses connections without TLS. Default the CA bundle here so the
+# database connection is encrypted even if the env var is missing on Render.
+ENV MYSQL_ATTR_SSL_CA=/etc/ssl/certs/ca-certificates.crt
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 

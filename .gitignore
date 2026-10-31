@@ -9,3 +9,6 @@ dist/
 # Blender autosaves and local backups (karakter.blend is the source of the characters)
 *.blend1
 art3d/*backup*.blend
+
+# Local TLS certs (Render uses the system CA bundle in the Docker image)
+*.pem
