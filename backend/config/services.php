@@ -24,6 +24,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Uploaded pictures and audio (see App\Support\Media). Empty = local disk (development).
+    'cloudinary' => [
+        'url' => env('CLOUDINARY_URL'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_KEY'),
     ],
