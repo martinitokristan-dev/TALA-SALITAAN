@@ -36,6 +36,11 @@ export function NameScreen() {
     try {
       setConfirm(await pupilApi.check(section!.id, name.trim()))
     } catch (e) {
+      // A server without the check step yet (404): sign in straight away as before.
+      if (e instanceof ApiError && e.status === 404) {
+        setBusy(false)
+        return start()
+      }
       handleError(e)
     } finally {
       setBusy(false)
