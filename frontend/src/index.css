@@ -1,0 +1,85 @@
+/*
+ * Design tokens taken from the Tala-Salitaan screen designs
+ * (sky, gold title, yellow buttons with dark outline, bricks, grass, soil).
+ */
+@import '@fontsource/press-start-2p/400.css';
+@import '@fontsource/pixelify-sans/400.css';
+@import '@fontsource/pixelify-sans/700.css';
+
+:root {
+  --sky-top: #5aa9ee;
+  --sky-bottom: #8fd3f7;
+  --title-gold: #ffc21a;
+  --title-gold-dark: #e08a00;
+  --title-violet: #2b1f6b;
+  --button-yellow: #ffe14d;
+  --button-yellow-dark: #e5b81f;
+  --outline: #1d1b16;
+  --brick: #d9531e;
+  --brick-dark: #8f2f10;
+  --brick-light: #f08a4b;
+  --grass: #3dbe4b;
+  --grass-dark: #2a8c37;
+  --soil: #8b4a2b;
+  --soil-dark: #5e2f1a;
+  --text-dark: #1d1b16;
+  --text-light: #ffffff;
+  --good: #34c759;
+  --bad: #ff5a4f;
+
+  --font-title: 'Press Start 2P', system-ui, sans-serif;
+  --font-body: 'Pixelify Sans', system-ui, sans-serif;
+  /* Clear, round letters for anything a child has to read (instructions, meanings, sentences) */
+  --font-read: 'Plus Jakarta Sans Variable', 'Segoe UI', system-ui, sans-serif;
+
+  font-family: var(--font-body);
+  color: var(--text-dark);
+  background: var(--sky-top);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  height: 100%;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
+img {
+  image-rendering: auto;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 4px solid var(--title-violet);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

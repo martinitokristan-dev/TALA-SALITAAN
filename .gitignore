@@ -1,0 +1,11 @@
+.scratch/
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+
+# Blender autosaves and local backups (karakter.blend is the source of the characters)
+*.blend1
+art3d/*backup*.blend

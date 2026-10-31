@@ -1,0 +1,706 @@
+/*
+ * Level path inside a sesyon (Candy Crush style): glossy round levels on a
+ * winding candy-stripe road through the meadow, stars under finished levels,
+ * a bouncing player badge on the next level.
+ */
+
+.lv-screen {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #8fd3f7;
+  font-family: var(--font-body);
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.lv-header {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: max(10px, env(safe-area-inset-top)) 12px 10px;
+  pointer-events: none;
+}
+.lv-header > * { pointer-events: auto; }
+.lv-back {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 10px 6px;
+  background: #fff;
+  border: 3px solid var(--outline);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+  color: var(--outline);
+  text-decoration: none;
+  font-family: var(--font-title);
+  font-size: 9px;
+}
+.lv-banner {
+  justify-self: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px clamp(10px, 4vw, 26px) 9px;
+  min-width: 0;
+  background: linear-gradient(180deg, #b29cff 0%, #7a5cf0 55%, #5b3fd1 100%);
+  border: 3px solid #2b1f6b;
+  border-radius: 14px;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.45), 0 5px 0 #2b1f6b, 0 8px 16px rgba(0, 0, 0, 0.25);
+  color: #fff;
+  text-align: center;
+  max-width: 100%;
+  animation: lv-drop 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.lv-banner-title {
+  font-family: var(--font-title);
+  font-size: clamp(10px, 2.9vw, 16px);
+  line-height: 1.3;
+  text-shadow: 0 2px 0 #2b1f6b;
+  overflow-wrap: anywhere;
+}
+.lv-banner-sub { font-weight: 700; font-size: 14px; margin-top: 4px; opacity: 0.95; }
+.lv-stars-total {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px 6px 8px;
+  background: #fff8e1;
+  border: 3px solid var(--outline);
+  border-radius: 999px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+  font-family: var(--font-title);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.lv-stars-total small { font-size: 8px; opacity: 0.7; }
+@media (max-width: 480px) {
+  .lv-stars-total small { display: block; }
+  .lv-stars-total span { display: flex; flex-direction: column; line-height: 1.15; }
+}
+
+@keyframes lv-drop {
+  from { transform: translateY(-40px) scale(0.8); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* ── Scrolling world ────────────────────────────────────── */
+.lv-scroller {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* The meadow scrolls with the levels and fills the whole width (no seam on tablets). */
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.22) 2px, transparent 3px) 0 0 / 34px 34px,
+    radial-gradient(circle, rgba(40, 120, 40, 0.12) 3px, transparent 4px) 17px 17px / 34px 34px,
+    linear-gradient(180deg, #8fd3f7 0, #b8ebf9 120px, #c9f2b0 300px, #9fe07d 520px, #8ad46a 100%);
+  background-attachment: local;
+}
+.lv-scroller::-webkit-scrollbar { display: none; }
+.lv-track {
+  position: relative;
+  width: min(100%, 620px);
+  margin: 0 auto;
+}
+.lv-loading,
+.lv-message {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 20px;
+  text-align: center;
+  padding: 24px;
+}
+.lv-message p {
+  margin: 0;
+  max-width: 440px;
+  background: #fff8e1;
+  border: 4px solid var(--outline);
+  padding: 16px 20px;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.25);
+}
+
+.lv-cloud { position: absolute; width: 120px; opacity: 0.95; animation: lv-cloud 38s linear infinite; }
+.lv-cloud-1 { top: 70px; left: -140px; }
+.lv-cloud-2 { top: 150px; left: -140px; width: 80px; animation-duration: 52s; animation-delay: -20s; }
+@keyframes lv-cloud { to { transform: translateX(calc(min(100vw, 620px) + 280px)); } }
+
+.lv-goal { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 2; }
+/* a real treasure chest: big, sitting on a little shadow (no bouncing) */
+.lv-goal-chest { width: 128px; position: relative; filter: drop-shadow(0 8px 0 rgba(40, 60, 20, 0.28)); }
+.lv-goal-chest.is-open { width: 136px; }
+.lv-goal-glow {
+  position: absolute;
+  top: -40px;
+  width: 190px;
+  height: 190px;
+  background: repeating-conic-gradient(rgba(255, 255, 255, 0.5) 0 8deg, transparent 8deg 22deg);
+  mask: radial-gradient(circle, #000 15%, transparent 65%);
+  animation: rays 24s linear infinite;
+  opacity: 0.55;
+}
+.lv-goal-glow.is-open { opacity: 1; }
+.lv-goal-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin-top: 8px;
+  padding: 5px 10px;
+  background: var(--button-yellow);
+  border: 3px solid var(--outline);
+  color: var(--outline);
+  font-family: var(--font-title);
+  font-size: 10px;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+.lv-goal-label small { font-family: var(--font-body); font-weight: 700; font-size: 13px; }
+/* All levels done: the chest is a button to the next sesyon */
+button.lv-goal {
+  z-index: 7;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+button.lv-goal .lv-goal-label { box-shadow: inset 0 -4px 0 var(--button-yellow-dark), 0 4px 0 rgba(0, 0, 0, 0.3); }
+button.lv-goal:hover .lv-goal-label { filter: brightness(1.06); }
+button.lv-goal:active .lv-goal-label { transform: translateY(3px); box-shadow: inset 0 -2px 0 var(--button-yellow-dark), 0 1px 0 rgba(0, 0, 0, 0.3); }
+button.lv-goal:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+
+/* meadow sprites: plain images (shadow baked in, no CSS filter: hundreds of filters are slow to scroll) */
+.lv-decor { position: absolute; z-index: 1; display: block; max-width: none; pointer-events: none; user-select: none; image-rendering: pixelated; }
+
+/* ── Candy-stripe path ──────────────────────────────────── */
+.lv-path { position: absolute; inset: 0; z-index: 2; overflow: visible; pointer-events: none; }
+.lv-path path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+/* A sandy road with a grass-shaded edge and stepping stones down the middle */
+.lv-path-edge { stroke: #4f9a3a; stroke-width: 54; transform: translateY(3px); opacity: 0.55; }
+.lv-path-base { stroke: #ecd29c; stroke-width: 42; }
+.lv-path-stripes { stroke: #d8b679; stroke-width: 16; stroke-dasharray: 12 22; }
+.lv-path-done {
+  stroke: #ffe7a3;
+  stroke-width: 42;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: lv-draw 1.4s 0.35s ease-out forwards;
+}
+.lv-path-done-stripes {
+  stroke: #f5a623;
+  stroke-width: 16;
+  stroke-dasharray: 12 22;
+  opacity: 0;
+  animation: lv-fade 0.4s 1.5s ease forwards;
+}
+@keyframes lv-draw { to { stroke-dashoffset: 0; } }
+@keyframes lv-fade { to { opacity: 1; } }
+
+/* ── Level nodes ────────────────────────────────────────── */
+.lv-node-wrap {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: lv-pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+@keyframes lv-pop {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.lv-node {
+  position: relative;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse 46% 30% at 42% 24%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%),
+    radial-gradient(circle at 50% 38%, var(--c1) 0%, var(--c2) 62%, var(--c3) 100%);
+  box-shadow:
+    0 6px 0 var(--c3),
+    0 11px 14px rgba(0, 40, 0, 0.35),
+    inset 0 -7px 10px rgba(0, 0, 0, 0.22);
+  transition: transform 0.15s ease;
+  touch-action: manipulation;
+}
+.lv-node:hover { transform: translateY(-2px) scale(1.04); }
+.lv-node:active { transform: translateY(3px) scale(0.96); box-shadow: 0 3px 0 var(--c3), 0 6px 8px rgba(0, 40, 0, 0.3), inset 0 -7px 10px rgba(0, 0, 0, 0.22); }
+.lv-node-num {
+  font-family: var(--font-title);
+  font-size: 18px;
+  color: #fff;
+  text-shadow: 2px 2px 0 var(--c3), -1px -1px 0 var(--c3), 1px -1px 0 var(--c3), -1px 1px 0 var(--c3), 0 3px 0 rgba(0, 0, 0, 0.35);
+  transform: translateY(1px);
+}
+
+.is-current .lv-node-num { font-size: 21px; }
+.is-current .lv-node::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.9);
+  animation: lv-ring 1.6s ease-out infinite;
+}
+@keyframes lv-ring {
+  from { transform: scale(0.85); opacity: 1; }
+  to { transform: scale(1.35); opacity: 0; }
+}
+@keyframes lv-breathe { 50% { transform: scale(1.06); } }
+
+.is-locked .lv-node {
+  --c1: #e6ebf0 !important;
+  --c2: #a9b4c0 !important;
+  --c3: #6b7684 !important;
+  border-color: #eef2f5;
+}
+.is-locked .lv-node-num { opacity: 0.85; }
+.lv-node-lock {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #6b7684;
+  color: #6b7684;
+}
+.is-shaking { animation: lv-shake 0.45s ease both; }
+@keyframes lv-shake {
+  20% { transform: translateX(-7px) rotate(-4deg); }
+  40% { transform: translateX(7px) rotate(4deg); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(4px); }
+}
+
+.star-arc { display: flex; gap: 1px; margin-top: 8px; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.25)); }
+.star-arc span { display: inline-flex; animation: lv-star-in 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+@keyframes lv-star-in { from { scale: 0; rotate: -90deg; } to { scale: 1; rotate: 0deg; } }
+.star { display: block; }
+
+.lv-crown {
+  position: absolute;
+  top: -20px;
+  width: 34px;
+  height: 22px;
+  z-index: 1;
+  background: linear-gradient(180deg, #fff1a1, #ffc928 55%, #f08c00);
+  clip-path: polygon(0 100%, 0 25%, 22% 60%, 50% 0, 78% 60%, 100% 25%, 100% 100%);
+  filter: drop-shadow(0 2px 0 #9a5b00);
+}
+
+
+/* ── Toast + level popup ────────────────────────────────── */
+.lv-toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 12px 18px;
+  background: #fff8e1;
+  border: 4px solid var(--outline);
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.25);
+  font-weight: 700;
+  font-size: 18px;
+  white-space: nowrap;
+  animation: lv-toast 0.35s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+@keyframes lv-toast { from { transform: translate(-50%, 30px); opacity: 0; } }
+
+.lv-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(20, 30, 60, 0.55);
+  backdrop-filter: blur(3px);
+  animation: lv-fade 0.2s ease forwards;
+  opacity: 0;
+}
+.lv-modal-card {
+  position: relative;
+  width: min(380px, 100%);
+  padding: 46px 22px 22px;
+  background: linear-gradient(180deg, #fffdf3, #fff1c9);
+  border: 4px solid var(--outline);
+  border-radius: 22px;
+  box-shadow: inset 0 -6px 0 #f1dfaa, 0 10px 0 rgba(0, 0, 0, 0.25), 0 18px 40px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  animation: lv-card 0.45s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+@keyframes lv-card {
+  from { transform: scale(0.5) translateY(40px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.lv-modal-ribbon {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 26px;
+  background: linear-gradient(180deg, #ff8fb8, #e43f8a);
+  border: 4px solid var(--outline);
+  border-radius: 12px;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.45), 0 5px 0 rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-family: var(--font-title);
+  font-size: 18px;
+  text-shadow: 0 2px 0 #93204f;
+  white-space: nowrap;
+}
+.lv-modal-stage { margin: 0; font-family: var(--font-title); font-size: 11px; color: #6b5a3a; }
+.lv-modal-task { margin: 10px 0 14px; font-size: 21px; font-weight: 700; line-height: 1.25; }
+.lv-modal-stars { display: flex; justify-content: center; gap: 4px; margin-bottom: 12px; }
+.lv-modal-stars span { animation: lv-star-in 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+.lv-modal-note { margin: 0 0 16px; font-size: 17px; color: #4a4030; }
+.lv-modal-actions { display: flex; justify-content: center; }
+.lv-modal-actions .pixel-button { min-width: 200px; min-height: 58px; }
+.lv-modal-actions .pixel-button-label { font-size: 15px; }
+/* room for the mushroom on the right so it never covers the last letters */
+.lv-modal-actions .pixel-button:has(.pixel-button-mushroom) .pixel-button-label { padding-right: 40px; padding-left: 12px; }
+.lv-modal-actions .pixel-button-mushroom { height: 50%; right: 12px; }
+.lv-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: transparent;
+  border: 0;
+  font-family: var(--font-title);
+  font-size: 8px;
+  color: var(--outline);
+}
+
+/* ── World map (castles) ────────────────────────────────── */
+.wm-screen {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.22) 2px, transparent 3px) 0 0 / 34px 34px,
+    linear-gradient(180deg, #8fd3f7 0, #b8ebf9 140px, #9fe07d 360px, #8ad46a 100%);
+  padding: 16px 14px 32px;
+  font-family: var(--font-body);
+}
+.wm-player { padding: 8px 12px; background: #fff8e1; border: 3px solid var(--outline); box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25); font-weight: 700; font-size: 16px; }
+.wm-list { display: flex; flex-direction: column; gap: 18px; max-width: 760px; margin: 0 auto; }
+.wm-card {
+  background: #fffdf3;
+  border: 4px solid var(--outline);
+  border-radius: 18px;
+  box-shadow: inset 0 -6px 0 #f1dfaa, 0 7px 0 rgba(0, 0, 0, 0.22);
+  padding: 16px;
+  animation: lv-pop 0.5s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+.wm-card.is-locked { filter: grayscale(0.7); opacity: 0.85; }
+.wm-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.wm-card-kicker { font-family: var(--font-title); font-size: 10px; color: #6b5a3a; }
+.wm-card-title { margin: 4px 0 0; font-family: var(--font-title); font-size: clamp(14px, 4vw, 20px); }
+.wm-sesyons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.wm-ses {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px 10px;
+  border: 3px solid var(--outline);
+  border-radius: 14px;
+  background: var(--button-yellow);
+  box-shadow: inset 0 -5px 0 var(--button-yellow-dark), 0 4px 0 rgba(0, 0, 0, 0.22);
+  font-family: var(--font-title);
+  font-size: 11px;
+  color: var(--outline);
+}
+.wm-ses.is-completed { background: #9fe8a6; box-shadow: inset 0 -5px 0 #4fbf5c, 0 4px 0 rgba(0, 0, 0, 0.22); }
+.wm-ses.is-unlocked { animation: lv-breathe 1.8s ease-in-out infinite; }
+.wm-ses:disabled { background: #d7dde3; box-shadow: inset 0 -5px 0 #a9b4c0, 0 4px 0 rgba(0, 0, 0, 0.15); color: #5a6470; animation: none; cursor: default; }
+.wm-ses-meta { font-family: var(--font-body); font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 3px; }
+.wm-note { text-align: center; color: #fff; font-weight: 700; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3); margin-top: 18px; }
+
+/* ── 3D castle map ──────────────────────────────────────── */
+.m3-screen { position: fixed; inset: 0; overflow: hidden; font-family: var(--font-body); }
+.m3-root {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #5aa9ee 0%, #8fd3f7 35%, #bfe6fb 60%);
+}
+.m3-root canvas { touch-action: none; cursor: grab; }
+.m3-root canvas:active { cursor: grabbing; }
+.m3-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #5aa9ee, #9fe07d);
+  font-family: var(--font-title);
+  font-size: 14px;
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+.wm-fallback { position: absolute; inset: 0; overflow-y: auto; padding-top: 76px; }
+
+.m3-header {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: max(12px, env(safe-area-inset-top)) 12px 10px;
+  pointer-events: none;
+}
+.m3-header > * { pointer-events: auto; }
+.m3-header .wm-player { margin-right: auto; max-width: 45vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m3-hint {
+  position: absolute;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 10;
+  margin: 0;
+  padding: 8px 14px;
+  background: rgba(255, 248, 225, 0.92);
+  border: 3px solid var(--outline);
+  font-family: var(--font-title);
+  font-size: clamp(8px, 2.5vw, 10px);
+  white-space: nowrap; /* one line, also on narrow phones */
+  pointer-events: none;
+}
+
+/* Castle name plate under each castle (the labels in the sketch) */
+.m3-labels { position: absolute; inset: 0; z-index: 5; pointer-events: none; overflow: hidden; }
+.m3-label-anchor { position: absolute; top: 0; left: 0; will-change: transform; visibility: hidden; }
+/* Small name tag floating above each building (never over the character on the ground) */
+.m3-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px 4px;
+  background: linear-gradient(180deg, #e0a96a, #c98a4b);
+  border: 2px solid #4a2a12;
+  border-radius: 8px;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35), 0 3px 0 #4a2a12;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  user-select: none;
+}
+.m3-label-title { font-family: var(--font-title); font-size: 9px; text-shadow: 0 1px 0 #4a2a12; }
+.m3-label-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 6px;
+  background: #fff8e1;
+  border: 2px solid #4a2a12;
+  border-radius: 999px;
+  color: var(--outline);
+  font-weight: 700;
+  font-size: 11px;
+}
+.m3-label-meta svg { width: 11px; height: 11px; }
+.m3-label.is-locked { filter: grayscale(0.85); opacity: 0.9; }
+.m3-label.is-completed { background: linear-gradient(180deg, #6fd27a, #3dbe4b); border-color: #1f5e27; box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.35), 0 4px 0 #1f5e27; }
+
+/* Sesyon picker that slides up after tapping a castle (the Sesyon 1/2/3 ovals in the sketch) */
+.m3-sheet {
+  position: absolute;
+  left: 50%;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 40;
+  width: min(560px, calc(100% - 24px));
+  padding: 18px 16px 16px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #fffdf3, #fff1c9);
+  border: 4px solid var(--outline);
+  border-radius: 22px;
+  box-shadow: inset 0 -6px 0 #f1dfaa, 0 10px 0 rgba(0, 0, 0, 0.22), 0 20px 40px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  animation: m3-sheet 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes m3-sheet { from { transform: translate(-50%, 120%); } to { transform: translate(-50%, 0); } }
+.m3-sheet-kicker { font-family: var(--font-title); font-size: 10px; color: #6b5a3a; }
+.m3-sheet-title { margin: 6px 0 14px; font-family: var(--font-title); font-size: clamp(14px, 4vw, 19px); }
+.m3-sheet-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: transparent;
+  border: 0;
+  font-family: var(--font-title);
+  font-size: 8px;
+  color: var(--outline);
+}
+.m3-sesyons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.m3-ses {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 6px;
+  border: 3px solid var(--outline);
+  border-radius: 999px / 60%;
+  background: var(--button-yellow);
+  box-shadow: inset 0 -5px 0 var(--button-yellow-dark), 0 4px 0 rgba(0, 0, 0, 0.22);
+  color: var(--outline);
+  animation: lv-pop 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+.m3-ses-name { font-family: var(--font-title); font-size: clamp(9px, 2.6vw, 12px); }
+.m3-ses-meta { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; font-size: 13px; }
+.m3-ses.is-completed { background: #9fe8a6; box-shadow: inset 0 -5px 0 #4fbf5c, 0 4px 0 rgba(0, 0, 0, 0.22); }
+.m3-ses.is-unlocked:not(:disabled) .m3-ses-name::after { content: ''; }
+.m3-ses:disabled { background: #d7dde3; box-shadow: inset 0 -5px 0 #a9b4c0, 0 4px 0 rgba(0, 0, 0, 0.15); color: #5a6470; cursor: default; }
+
+
+/* The pupil's 3D character standing on / walking along the level path */
+.lv-walker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 6;
+  pointer-events: none;
+  will-change: transform;
+  filter: drop-shadow(0 6px 4px rgba(0, 40, 0, 0.25));
+}
+.lv-walker canvas { display: block; }
+
+/* 3D map kept alive (paused) under the level path and the game */
+.m3-screen.is-parked { visibility: hidden; pointer-events: none; }
+.m3-screen.is-parked * { visibility: hidden !important; }
+
+/* ── Stage signpost stuck in the ground beside the road ── */
+.signpost {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 132px;
+  pointer-events: none;
+  filter: drop-shadow(0 5px 3px rgba(0, 50, 0, 0.22));
+}
+.signpost-board {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  padding: 7px 8px 8px;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 11px, rgba(110, 59, 23, 0.28) 11px 13px),
+    linear-gradient(180deg, #e3ae6f, #c98a4b);
+  border: 3px solid #4a2a12;
+  border-radius: 6px;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.35), inset 0 -3px 0 rgba(110, 59, 23, 0.35);
+  color: #fff;
+  text-align: center;
+}
+/* two nail heads */
+.signpost-board::before,
+.signpost-board::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #4a2a12;
+}
+.signpost-board::before { left: 6px; }
+.signpost-board::after { right: 6px; }
+.signpost-title { font-family: var(--font-title); font-size: 12px; text-shadow: 0 2px 0 #4a2a12; }
+.signpost-task { font-family: var(--font-body); font-weight: 700; font-size: 11px; line-height: 1.2; text-shadow: 0 1px 0 #4a2a12; }
+.signpost.is-stage-1 .signpost-board { background: repeating-linear-gradient(180deg, transparent 0 11px, rgba(31, 94, 39, 0.25) 11px 13px), linear-gradient(180deg, #7fda88, #3dbe4b); border-color: #1f5e27; }
+.signpost.is-stage-1 .signpost-title,
+.signpost.is-stage-1 .signpost-task { text-shadow: 0 1px 0 #1f5e27; }
+.signpost-post {
+  width: 12px;
+  height: 46px;
+  margin-top: -3px;
+  background: linear-gradient(90deg, #8a5228 0 30%, #c47c3e 30% 70%, #6e3b17 70%);
+  border: 3px solid #4a2a12;
+  border-top: 0;
+}
+/* the post goes into the ground: a little mound of grass hides its foot */
+.signpost-grass {
+  width: 46px;
+  height: 12px;
+  margin-top: -8px;
+  background:
+    radial-gradient(ellipse at 50% 100%, #3f9a3a 0 60%, transparent 62%),
+    radial-gradient(circle at 20% 80%, #57b84a 0 30%, transparent 32%),
+    radial-gradient(circle at 80% 80%, #57b84a 0 30%, transparent 32%);
+}
+
+/* ── Readable text on the path, popups and map (clear round font for children) ── */
+.lv-modal-task,
+.lv-modal-note,
+.lv-toast,
+.lv-banner-sub,
+.lv-goal-label small,
+.signpost-task,
+.m3-label-meta,
+.m3-ses-meta,
+.lv-stage-banner small {
+  font-family: var(--font-read);
+  font-weight: 800;
+}
+.signpost-task { font-size: 12px; }
+.lv-modal-note { font-size: 18px; }
+
+/* "Papunta na sa Stage 2!" while the character runs past the Stage 2 sign */
+.lv-stage-banner {
+  position: fixed;
+  left: 50%;
+  top: max(84px, calc(env(safe-area-inset-top) + 74px));
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 20px 12px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #ffb86b, #f07a12);
+  border: 3px solid #7a3a00;
+  border-radius: 14px;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.45), 0 5px 0 #7a3a00;
+  color: #fff;
+  text-align: center;
+  pointer-events: none;
+  animation: lv-banner-in 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.lv-stage-banner span { font-family: var(--font-title); font-size: clamp(12px, 3.4vw, 17px); text-shadow: 0 2px 0 #7a3a00; white-space: nowrap; }
+.lv-stage-banner small { font-size: 14px; text-shadow: 0 1px 0 #7a3a00; }
+@keyframes lv-banner-in { from { transform: translate(-50%, -20px); opacity: 0; } }
