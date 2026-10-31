@@ -6,6 +6,7 @@
  */
 import { useState } from 'react'
 import { ApiError, pupilApi } from '../lib/api'
+import { feedbackLine } from '../lib/feedback'
 import { play } from '../lib/sound'
 import type { AnswerResponse, JumbleItem, PictureItem } from '../lib/types'
 import { Icon } from '../ui/Icon'
@@ -72,7 +73,7 @@ export function JumbleStage({
         onWrong(res)
         setTriesLeft(res.attempts_left)
         setShake(true)
-        setMessage(`Muntik na! Subukan muli. ${res.attempts_left} subok pa.`)
+        setMessage(feedbackLine(res))
         window.setTimeout(() => {
           setShake(false)
           setSlots(Array(n).fill(null))
@@ -178,7 +179,7 @@ export function PictureStage({
         onWrong(res)
         setWrong((w) => [...w, key])
         setTriesLeft(res.attempts_left)
-        setMessage(`Hindi iyan. Subukan muli! ${res.attempts_left} subok pa.`)
+        setMessage(feedbackLine(res))
       }
     } catch (e) {
       setMessage(e instanceof ApiError ? e.message : 'Hindi maabot ang server.')

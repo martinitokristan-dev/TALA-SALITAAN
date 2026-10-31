@@ -12,6 +12,7 @@ import {
 } from '@dnd-kit/core'
 import { useMemo, useState } from 'react'
 import { ApiError, pupilApi } from '../lib/api'
+import { FEEDBACK_LINE, feedbackLine } from '../lib/feedback'
 import type { AnswerResponse, SentenceGroup, SituationItem } from '../lib/types'
 import { Icon } from '../ui/Icon'
 import { Star } from '../ui/StarRow'
@@ -135,7 +136,7 @@ export function SentenceStage({
   const [picked, setPicked] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
-  const [cheer, setCheer] = useState<number | null>(null)
+  const [cheer, setCheer] = useState<{ stars: number; line: string } | null>(null)
   const [dragging, setDragging] = useState<string | null>(null) // word being dragged
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(TouchSensor, { activationConstraint: { delay: 80, tolerance: 8 } }))
@@ -160,11 +161,11 @@ export function SentenceStage({
         setDone(nextDone)
         if (res.correct) {
           onRight(res)
-          setCheer(res.stars)
+          setCheer({ stars: res.stars, line: feedbackLine(res) })
           window.setTimeout(() => setCheer(null), 1300)
         } else {
           onWrong(res)
-          setMessage(`Ang tamang sagot: ${res.correct_answer?.word?.toUpperCase()}`)
+          setMessage(`${FEEDBACK_LINE.naubos} Ang tamang sagot: ${res.correct_answer?.word?.toUpperCase()}`)
         }
         if (sentences.every((s) => nextDone[s.word_id])) {
           const stars = sentences.reduce((sum, s) => sum + (nextDone[s.word_id]?.stars ?? 0), 0)
@@ -174,7 +175,7 @@ export function SentenceStage({
         onWrong(res)
         setWrongFlash(sentenceId)
         window.setTimeout(() => setWrongFlash(null), 600)
-        setMessage(`Hindi bagay diyan. Subukan muli! ${res.attempts_left} subok pa.`)
+        setMessage(feedbackLine(res))
       }
     } catch (e) {
       setMessage(e instanceof ApiError ? e.message : 'Hindi maabot ang server.')
@@ -250,10 +251,10 @@ export function SentenceStage({
 
       {cheer !== null && (
         <div className="pl-cheer" role="status">
-          <span>Tama! Ang galing mo!</span>
+          <span>{cheer.line}</span>
           <span className="pl-cheer-stars">
             {Array.from({ length: maxStars }, (_, i) => (
-              <Star key={i} filled={i < cheer} size={22} />
+              <Star key={i} filled={i < cheer.stars} size={22} />
             ))}
           </span>
         </div>
@@ -299,7 +300,7 @@ export function SituationStage({
         onWrong(res)
         setWrong((w) => [...w, key])
         setTriesLeft(res.attempts_left)
-        setMessage(`Hindi iyan. Subukan muli! ${res.attempts_left} subok pa.`)
+        setMessage(feedbackLine(res))
       }
     } catch (e) {
       setMessage(e instanceof ApiError ? e.message : 'Hindi maabot ang server.')

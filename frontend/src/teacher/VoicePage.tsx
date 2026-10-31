@@ -105,7 +105,7 @@ export function VoicePage() {
                 <b>Kailan tumutunog:</b> {info.when}
               </p>
               <p>
-                <b>Halimbawang sasabihin:</b> {info.example}
+                <b>Sabihin nang eksakto (ito rin ang nakasulat sa laro):</b> {info.example}
               </p>
             </div>
           </header>

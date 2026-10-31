@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { emptyFeedbackClips, feedbackKindFor, type FeedbackClipUrls } from '../lib/feedback'
+import { emptyFeedbackClips, feedbackKindFor, feedbackLine, type FeedbackClipUrls } from '../lib/feedback'
 import { PlayBackdrop } from '../ui/PlayBackdrop'
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ApiError, peek, pupilApi, sesyonPath, tokens } from '../lib/api'
@@ -249,7 +249,7 @@ function ResultPopup({ finished, maxStars, onNext }: { finished: Finished; maxSt
         <div className={`lv-modal-ribbon ${good ? '' : 'is-soft'}`}>
           <span>{good ? 'TAMA!' : 'OKAY LANG!'}</span>
         </div>
-        <p className="pl-result-title">{good ? 'Tama! Ang galing mo!' : 'Kaya mo ʼyan sa susunod!'}</p>
+        <p className="pl-result-title">{feedbackLine(res)}</p>
         <div className="lv-modal-stars">
           {Array.from({ length: maxStars }, (_, i) => (
             <span key={i} style={{ animationDelay: `${200 + i * 110}ms` }}>
