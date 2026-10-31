@@ -704,3 +704,29 @@ button.lv-goal:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
 .lv-stage-banner span { font-family: var(--font-title); font-size: clamp(12px, 3.4vw, 17px); text-shadow: 0 2px 0 #7a3a00; white-space: nowrap; }
 .lv-stage-banner small { font-size: 14px; text-shadow: 0 1px 0 #7a3a00; }
 @keyframes lv-banner-in { from { transform: translate(-50%, -20px); opacity: 0; } }
+
+/* "Ikaw ba ito?" before a pupil signs in (NameScreen) */
+.nm-confirm .lv-modal-card { width: min(400px, 100%); padding-top: 50px; }
+.nm-confirm-name { margin: 0; font-family: var(--font-title); font-size: clamp(16px, 5vw, 20px); line-height: 1.35; word-break: break-word; }
+.nm-confirm-section { margin: 6px 0 14px; font-family: var(--font-title); font-size: 11px; line-height: 1.7; color: #6b5a3a; }
+/* long ribbon text ("BAGONG MANLALARO") stays inside the card on small phones */
+.nm-confirm .lv-modal-ribbon { max-width: calc(100% - 20px); padding: 10px 16px; font-size: clamp(12px, 4.2vw, 18px); }
+.nm-confirm-progress {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 3px solid var(--outline);
+  border-radius: 14px;
+  text-align: left;
+}
+.nm-confirm-progress div { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.nm-confirm-progress dt { font-family: var(--font-title); font-size: 11px; color: #6b5a3a; }
+.nm-confirm-progress dd { margin: 0; display: flex; align-items: center; gap: 4px; font-family: var(--font-read); font-size: 17px; font-weight: 700; text-align: right; }
+.nm-confirm-progress small { font-size: 13px; font-weight: 600; color: #6b5a3a; }
+.nm-confirm-ask { margin: 0 0 14px; font-family: var(--font-read); font-size: 18px; font-weight: 700; }
+.nm-confirm-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.nm-confirm-actions .pixel-button { flex: 1 1 140px; min-height: 54px; }
+.nm-confirm-actions .pixel-button-label { font-size: 13px; }
+.nm-confirm-actions .is-cancel { filter: saturate(0.15) brightness(1.05); }

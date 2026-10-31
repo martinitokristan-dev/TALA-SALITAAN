@@ -22,16 +22,8 @@ class PupilAuthController extends Controller
             'consented' => ['accepted'],
         ]);
 
-        $section = Section::where('id', $data['section_id'])->where('is_active', true)->first();
-        if (! $section) {
-            throw ValidationException::withMessages(['section_id' => 'Hindi bukas ang seksyon na ito. Pumili ulit.']);
-        }
-
-        // Uppercase so "juan" and "Juan" are the same pupil (the name box shows capitals too).
-        $name = mb_strtoupper(preg_replace('/\s+/u', ' ', trim($data['name'])));
-        if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Ilagay ang pangalan.']);
-        }
+        $section = $this->openSection($data['section_id']);
+        $name = $this->cleanName($data['name']);
 
         $pupil = Pupil::where('section_id', $section->id)->where('name', $name)->first()
             ?? Pupil::create(['section_id' => $section->id, 'name' => $name]);
@@ -44,6 +36,29 @@ class PupilAuthController extends Controller
             'token' => $pupil->createToken('pupil', ['pupil'])->plainTextToken,
             'pupil' => $this->present($pupil, $section),
             'progress' => $this->catalog()->progress($pupil),
+        ]);
+    }
+
+    /**
+     * Before signing in: is this name already a player in THIS section, and where did they stop?
+     * The app asks "Ikaw ba ito? Ipagpatuloy?" with that place. Each section is separate, so a
+     * name that played in another section is a new player here. Creates nothing, gives no token.
+     */
+    public function check(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'section_id' => ['required', 'integer'],
+            'name' => ['required', 'string', 'min:1', 'max:60'],
+        ]);
+        $section = $this->openSection($data['section_id']);
+        $name = $this->cleanName($data['name']);
+        $pupil = Pupil::where('section_id', $section->id)->where('name', $name)->first();
+
+        return response()->json([
+            'name' => $name,
+            'section' => ['id' => $section->id, 'name' => $section->name],
+            'returning' => (bool) $pupil,
+            'resume' => $pupil ? $this->resumePoint($pupil) : null,
         ]);
     }
 
@@ -71,6 +86,62 @@ class PupilAuthController extends Controller
         $request->user()->currentAccessToken()?->delete();
 
         return response()->json(['ok' => true]);
+    }
+
+    private function openSection(int|string $id): Section
+    {
+        $section = Section::where('id', $id)->where('is_active', true)->first();
+        if (! $section) {
+            throw ValidationException::withMessages(['section_id' => 'Hindi bukas ang seksyon na ito. Pumili ulit.']);
+        }
+
+        return $section;
+    }
+
+    /** Uppercase with single spaces, so "juan  dela cruz" and "Juan Dela Cruz" are the same pupil. */
+    private function cleanName(string $raw): string
+    {
+        $name = mb_strtoupper(preg_replace('/\s+/u', ' ', trim($raw)));
+        if ($name === '') {
+            throw ValidationException::withMessages(['name' => 'Ilagay ang pangalan.']);
+        }
+
+        return $name;
+    }
+
+    /**
+     * Where the pupil stopped: the first unfinished sesyon (map, sesyon, stage, level), or
+     * finished = true when every sesyon is done. Level numbers match the level path.
+     */
+    private function resumePoint(Pupil $pupil): array
+    {
+        $cycles = $this->catalog()->progress($pupil);
+        $stars = array_sum(array_column($cycles, 'stars'));
+        $base = ['stars' => $stars, 'last_played_at' => $pupil->last_played_at?->toIso8601String()];
+
+        foreach ($cycles as $c) {
+            foreach ($c['sesyons'] as $s) {
+                if ($s['status'] !== 'unlocked' || $s['word_count'] === 0) {
+                    continue;
+                }
+                $total = $s['word_count'];
+                $stage = $s['stage1_done'] < $total ? 1 : 2;
+                $inStage = min($total, ($stage === 1 ? $s['stage1_done'] : $s['stage2_done']) + 1);
+
+                return $base + [
+                    'finished' => false,
+                    'cycle' => $c['cycle'],
+                    'cycle_title' => $c['title'],
+                    'sesyon' => $s['sesyon'],
+                    'stage' => $stage,
+                    'level' => $stage === 1 ? $inStage : $total + $inStage,
+                    'level_in_stage' => $inStage,
+                    'stage_total' => $total,
+                ];
+            }
+        }
+
+        return $base + ['finished' => true];
     }
 
     private function present(Pupil $pupil, ?Section $section): array

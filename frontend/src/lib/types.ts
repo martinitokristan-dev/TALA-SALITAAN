@@ -174,3 +174,25 @@ export interface FeedbackClip {
   is_active: boolean
   audio_url: string | null
 }
+
+/** POST /pupil/check: is this name already a player in the chosen section, and where did they stop? */
+export interface PupilCheck {
+  name: string
+  section: { id: number; name: string }
+  returning: boolean
+  resume:
+    | null
+    | { finished: true; stars: number; last_played_at: string | null }
+    | {
+        finished: false
+        stars: number
+        last_played_at: string | null
+        cycle: number
+        cycle_title: string
+        sesyon: number
+        stage: 1 | 2
+        level: number
+        level_in_stage: number
+        stage_total: number
+      }
+}

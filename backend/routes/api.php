@@ -23,6 +23,7 @@ Route::post('/teacher/login', [TeacherAuthController::class, 'login']);
 
 Route::get('/sections', [SectionController::class, 'open']);
 Route::post('/pupil/login', [PupilAuthController::class, 'login'])->middleware('throttle:30,1');
+Route::post('/pupil/check', [PupilAuthController::class, 'check'])->middleware('throttle:30,1');
 
 // ── Teacher portal ────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum', 'teacher', ForgetGameCache::class])->prefix('teacher')->group(function () {

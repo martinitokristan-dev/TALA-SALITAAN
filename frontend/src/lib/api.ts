@@ -3,6 +3,7 @@ import type {
   CycleProgress,
   FeedbackClip,
   Pupil,
+  PupilCheck,
   PupilDetail,
   PupilSummary,
   Section,
@@ -211,6 +212,8 @@ export const pupilApi = {
       name,
       consented: true,
     }),
+  /** Before login: does this name already play in this section, and where did they stop? */
+  check: (section_id: number, name: string) => request<PupilCheck>(null, 'POST', '/pupil/check', { section_id, name }),
   me: () => request<{ pupil: Pupil }>('pupil', 'GET', '/pupil/me'),
   setCharacter: (character: CharacterKind) => request<{ pupil: Pupil }>('pupil', 'POST', '/pupil/character', { character }),
   logout: () => request<{ ok: true }>('pupil', 'POST', '/pupil/logout'),
