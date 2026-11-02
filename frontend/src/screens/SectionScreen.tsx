@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Scene } from '../art/Scene'
 import { ApiError, pupilApi } from '../lib/api'
 import { useApi } from '../lib/useApi'
@@ -17,8 +17,6 @@ export function SectionScreen() {
   const api = useApi(null, '/sections', pupilApi.sections)
   const sections = api.data?.sections ?? null
   const error = api.error ? (api.error instanceof ApiError ? api.error.message : 'May problema. Subukang muli.') : null
-
-  if (!flow.hasConsent()) return <Navigate to="/pahintulot" replace />
 
   function choose(s: { id: number; name: string }) {
     flow.setSection(s)

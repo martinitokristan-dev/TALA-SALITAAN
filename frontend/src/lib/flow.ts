@@ -2,10 +2,11 @@ import type { CharacterKind } from './types'
 
 /**
  * Pupil sign-in flow:
- * SIMULAN -> CONCENT (SUMASANGAYON) -> PUPIL LOGIN -> section -> TALA-PANGALAN -> map.
+ * SIMULAN -> PUPIL LOGIN -> section -> TALA-PANGALAN (+ "Ikaw ba ito?") -> CONCENT (SUMASANGAYON
+ * signs in) -> PILIIN ANG KARAKTER -> map.
  */
 const KEYS = {
-  consent: 'tala.consentAccepted',
+  pendingName: 'tala.pendingName',
   section: 'tala.section',
   pupilName: 'tala.pupilName',
   character: 'tala.character',
@@ -17,8 +18,10 @@ export interface ChosenSection {
 }
 
 export const flow = {
-  acceptConsent: () => sessionStorage.setItem(KEYS.consent, '1'),
-  hasConsent: () => sessionStorage.getItem(KEYS.consent) === '1',
+  /** Name confirmed on TALA-PANGALAN, waiting for SUMASANGAYON on the consent screen (nothing saved yet). */
+  setPendingName: (name: string) => sessionStorage.setItem(KEYS.pendingName, name),
+  pendingName: () => sessionStorage.getItem(KEYS.pendingName),
+  clearPendingName: () => sessionStorage.removeItem(KEYS.pendingName),
 
   setSection: (s: ChosenSection) => sessionStorage.setItem(KEYS.section, JSON.stringify(s)),
   section: (): ChosenSection | null => {
@@ -39,7 +42,7 @@ export const flow = {
   clearCharacter: () => localStorage.removeItem(KEYS.character),
 
   reset: () => {
-    sessionStorage.removeItem(KEYS.consent)
+    sessionStorage.removeItem(KEYS.pendingName)
     sessionStorage.removeItem(KEYS.section)
     flow.clearPositions()
   },

@@ -21,11 +21,6 @@ import { WordsPage } from './teacher/WordsPage'
 // 3D screens load three.js only when needed.
 const CharacterScreen = lazy(() => import('./screens/CharacterScreen').then((m) => ({ default: m.CharacterScreen })))
 
-/**
- * Pupil: / (SIMULAN) -> /pahintulot (CONCENT) -> /login (PUPIL LOGIN) -> /pupil (section)
- *        -> /pupil/pangalan (TALA-PANGALAN) -> /pupil/karakter (PILIIN ANG KARAKTER) -> /mapa
- * Teacher: /login -> /teacher/login -> /teacher/...
- */
 /** PWA helpers that follow the route: install card on the start/login screens, launch splash out. */
 function PwaRouteEffects() {
   const { pathname } = useLocation()
@@ -39,6 +34,11 @@ function PwaRouteEffects() {
   return null
 }
 
+/**
+ * Pupil: / (SIMULAN) -> /login (PUPIL LOGIN) -> /pupil (section) -> /pupil/pangalan (TALA-PANGALAN)
+ *        -> /pahintulot (CONCENT; SUMASANGAYON signs in) -> /pupil/karakter (PILIIN ANG KARAKTER) -> /mapa
+ * Teacher: /login -> /teacher/login -> /teacher/...
+ */
 export default function App() {
   return (
     <BrowserRouter>

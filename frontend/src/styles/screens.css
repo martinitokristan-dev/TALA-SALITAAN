@@ -209,3 +209,20 @@
 }
 .ch-choice:active { transform: translateY(3px); box-shadow: 0 2px 0 #1d1b16; }
 .ch-choice.is-chosen { background: #ffe14d; }
+
+/* ── TALA-PANGALAN: SIMULAN under the name box (children don't know about Enter) ── */
+.scene-actions .nm-start { width: calc(60 * var(--u)); min-width: 220px; }
+.scene-actions .nm-start.pixel-button-medium { height: calc(10.4 * var(--u)); min-height: 52px; }
+.scene-actions .nm-start .pixel-button-label { font-size: max(15px, calc(4 * var(--u))); }
+/* phones held sideways: name box and SIMULAN side by side, so the button stays on screen */
+@media (orientation: landscape) and (max-height: 560px) {
+  .scene-actions:has(.nm-start) { flex-flow: row wrap; justify-content: center; align-items: center; width: min(92vw, 640px); }
+  .scene-actions:has(.nm-start) .field-error { flex-basis: 100%; }
+  .scene-actions:has(.nm-start) .pixel-field { flex: 1 1 0; width: auto; min-width: 0; }
+  .scene-actions .nm-start { flex: 0 0 auto; width: auto; min-width: 150px; padding: 0 18px; }
+}
+
+/* narrow phones: the CONCENT frame starts below the BUMALIK button */
+@media (max-width: 380px) {
+  .consent-scene { padding-top: 64px; }
+}

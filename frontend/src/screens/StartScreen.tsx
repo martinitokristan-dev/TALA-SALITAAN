@@ -9,7 +9,7 @@ export function StartScreen() {
 
   return (
     <Scene title={<GameTitle word="SALITAAN" />}>
-      <PixelButton mushroom onClick={() => navigate('/pahintulot')}>
+      <PixelButton mushroom onClick={() => navigate('/login')}>
         SIMULAN
       </PixelButton>
     </Scene>

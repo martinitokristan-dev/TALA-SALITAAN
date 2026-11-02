@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { Scene } from '../art/Scene'
-import { ApiError, pupilApi, tokens } from '../lib/api'
+import { ApiError, pupilApi } from '../lib/api'
 import { flow } from '../lib/flow'
 import type { PupilCheck } from '../lib/types'
 import { BackButton } from '../ui/BackButton'
@@ -10,11 +10,16 @@ import { PixelButton } from '../ui/PixelButton'
 import { PixelField } from '../ui/PixelField'
 import { Star, StarDefs } from '../ui/StarRow'
 
-/** Design: TALA-PANGALAN, "ILAGAY ANG PANGALAN NG MANLALARO". Comes after choosing the section. */
+/**
+ * Design: TALA-PANGALAN, "ILAGAY ANG PANGALAN NG MANLALARO". Comes after choosing the section.
+ * After "Ikaw ba ito?" the pupil goes to CONCENT; SUMASANGAYON there signs them in.
+ */
 export function NameScreen() {
   const navigate = useNavigate()
-  const [name, setName] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  // The consent screen sends a name problem back here (e.g. a name the server refused).
+  const backError = (useLocation().state as { error?: string } | null)?.error ?? null
+  const [name, setName] = useState(() => flow.pendingName() ?? '')
+  const [error, setError] = useState<string | null>(backError)
   const [busy, setBusy] = useState(false)
   // "Ikaw ba ito?" step: shown before signing in, for returning and new players alike.
   const [confirm, setConfirm] = useState<PupilCheck | null>(null)
@@ -25,7 +30,6 @@ export function NameScreen() {
     import('../map3d/Character').then((m) => m.preloadCharacters()).catch(() => undefined)
   }, [])
 
-  if (!flow.hasConsent()) return <Navigate to="/pahintulot" replace />
   if (!section) return <Navigate to="/pupil" replace />
 
   /** Step 1: look the name up in THIS section only and ask the pupil to confirm. */
@@ -36,11 +40,8 @@ export function NameScreen() {
     try {
       setConfirm(await pupilApi.check(section!.id, name.trim()))
     } catch (e) {
-      // A server without the check step yet (404): sign in straight away as before.
-      if (e instanceof ApiError && e.status === 404) {
-        setBusy(false)
-        return start()
-      }
+      // A server without the check step yet (404): go on to the consent screen without the popup.
+      if (e instanceof ApiError && e.status === 404) return toConsent(name.trim())
       handleError(e)
     } finally {
       setBusy(false)
@@ -55,31 +56,17 @@ export function NameScreen() {
     setError(e instanceof ApiError ? (e.field('name') ?? e.message) : 'May problema. Subukang muli.')
   }
 
-  /** Step 2 (IPAGPATULOY / MAGSIMULA): sign in. */
-  async function start() {
-    setBusy(true)
-    setError(null)
-    try {
-      const res = await pupilApi.login(section!.id, confirm?.name ?? name.trim())
-      tokens.set('pupil', res.token)
-      flow.setPupilName(res.pupil.name)
-      flow.clearPositions()
-      // Returning pupil: the character picked last time is chosen already on the next screen.
-      if (res.pupil.character) flow.setCharacter(res.pupil.character)
-      else flow.clearCharacter()
-      navigate('/pupil/karakter')
-    } catch (e) {
-      setConfirm(null)
-      handleError(e)
-    } finally {
-      setBusy(false)
-    }
+  /** Step 2 (IPAGPATULOY / MAGSIMULA): on to CONCENT. Nothing is saved until SUMASANGAYON. */
+  function toConsent(confirmedName: string) {
+    flow.setPendingName(confirmedName)
+    navigate('/pahintulot')
   }
 
   /** KANSELAHIN: not me / wrong name. Back to the name box, cleared. */
   function cancel() {
     setConfirm(null)
     setName('')
+    flow.clearPendingName()
   }
 
   return (
@@ -99,8 +86,14 @@ export function NameScreen() {
           busy={busy}
           autoComplete="given-name"
         />
+        {/* Children don't know they can press Enter: a big button right under the name box. */}
+        <PixelButton size="medium" className="nm-start" onClick={submit} disabled={busy || !name.trim()}>
+          {busy ? 'SANDALI…' : 'SIMULAN'}
+        </PixelButton>
       </Scene>
-      {confirm && <ConfirmPlayer check={confirm} busy={busy} onCancel={cancel} onContinue={start} />}
+      {confirm && (
+        <ConfirmPlayer check={confirm} busy={busy} onCancel={cancel} onContinue={() => toConsent(confirm.name)} />
+      )}
     </>
   )
 }
