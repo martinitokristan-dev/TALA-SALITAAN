@@ -9,9 +9,12 @@ import './styles/screens.css'
 import './styles/teacher.css'
 import './styles/levels.css'
 import './styles/play.css'
+import './styles/pwa.css'
 import App from './App.tsx'
+import { initInstallPrompt } from './lib/pwaInstall'
 
 limitZoomOut(0.5)
+initInstallPrompt()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

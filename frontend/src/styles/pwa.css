@@ -1,0 +1,143 @@
+/*
+ * PWA install card (src/lib/pwaInstall.ts): compact card at the TOP of the start / login screen
+ * (SIMULAN and the login buttons below stay free), slides down, big yellow I-INSTALL button,
+ * small "Mamaya na" link, safe-area aware. Pixel look of the game: dark outline, hard shadow.
+ */
+.tala-install {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 9000;
+  display: flex;
+  justify-content: center;
+  padding: max(10px, env(safe-area-inset-top)) 10px 0;
+  pointer-events: none;
+}
+
+.ti-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 470px;
+  padding: 10px 12px;
+  background: #fffdf2;
+  border: 3px solid var(--outline);
+  border-radius: 6px;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.28), 0 14px 28px rgba(20, 40, 90, 0.28);
+  color: var(--text-dark);
+  pointer-events: auto;
+  transform: translateY(calc(-100% - 30px));
+  opacity: 0;
+  transition: transform 0.42s cubic-bezier(0.22, 1.25, 0.36, 1), opacity 0.25s ease;
+}
+.tala-install.is-open .ti-card {
+  transform: translateY(0);
+  opacity: 1;
+}
+.tala-install.is-closing .ti-card {
+  transform: translateY(calc(-100% - 30px));
+  opacity: 0;
+  transition: transform 0.28s ease-in, opacity 0.28s ease-in;
+}
+
+.ti-icon {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border: 3px solid var(--outline);
+  border-radius: 10px;
+  image-rendering: auto;
+}
+
+.ti-text {
+  flex: 1;
+  min-width: 0;
+}
+.ti-title {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.1;
+  color: var(--title-violet);
+}
+.ti-sub {
+  margin-top: 4px;
+  font-family: var(--font-read);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #374151;
+}
+.ti-sub b { font-weight: 800; color: var(--text-dark); }
+.ti-ico {
+  width: 18px;
+  height: 18px;
+  color: #1d6fd1;
+  vertical-align: -4px;
+}
+
+.ti-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.ti-btn {
+  min-height: 44px;
+  min-width: 96px;
+  padding: 0 14px;
+  border: 3px solid var(--outline);
+  border-radius: 4px;
+  background: var(--button-yellow);
+  color: var(--text-dark);
+  font-family: var(--font-title);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 -4px 0 var(--button-yellow-dark), inset 3px 3px 0 #fff4a8, 0 4px 0 rgba(0, 0, 0, 0.28);
+  touch-action: manipulation;
+  transition: transform 0.08s ease;
+}
+.ti-btn:active { transform: translateY(3px); box-shadow: inset 0 -4px 0 var(--button-yellow-dark), 0 1px 0 rgba(0, 0, 0, 0.28); }
+.ti-btn:disabled { filter: grayscale(0.6); }
+.ti-later {
+  min-height: 30px;
+  border: 0;
+  background: transparent;
+  color: #4b5563;
+  font-family: var(--font-read);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* very narrow phones */
+@media (max-width: 360px) {
+  .ti-icon { width: 44px; height: 44px; }
+  .ti-title { font-size: 16px; }
+  .ti-sub { font-size: 12.5px; }
+  .ti-btn { min-width: 84px; padding: 0 10px; font-size: 10px; }
+}
+
+/* phones held sideways: top-left corner, away from the centred title */
+@media (orientation: landscape) and (max-height: 560px) {
+  .tala-install {
+    justify-content: flex-start;
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-top: max(8px, env(safe-area-inset-top));
+  }
+  .ti-card { max-width: min(290px, 32vw); padding: 7px 9px; gap: 8px; }
+  .ti-icon { width: 36px; height: 36px; border-width: 2px; border-radius: 8px; }
+  .ti-title { font-size: 14px; }
+  .ti-sub { font-size: 11.5px; margin-top: 2px; }
+  .ti-btn { min-height: 40px; min-width: 0; padding: 0 9px; font-size: 9px; }
+  .ti-later { min-height: 26px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ti-card,
+  .tala-install.is-closing .ti-card { transition: opacity 0.2s ease; }
+}

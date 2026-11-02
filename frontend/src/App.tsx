@@ -1,5 +1,6 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { setInstallPromptPath } from './lib/pwaInstall'
 import { ConsentScreen } from './screens/ConsentScreen'
 import { GameShell } from './screens/GameShell'
 import { LoginChoiceScreen } from './screens/LoginChoiceScreen'
@@ -25,9 +26,23 @@ const CharacterScreen = lazy(() => import('./screens/CharacterScreen').then((m) 
  *        -> /pupil/pangalan (TALA-PANGALAN) -> /pupil/karakter (PILIIN ANG KARAKTER) -> /mapa
  * Teacher: /login -> /teacher/login -> /teacher/...
  */
+/** PWA helpers that follow the route: install card on the start/login screens, launch splash out. */
+function PwaRouteEffects() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    setInstallPromptPath(pathname)
+  }, [pathname])
+  useEffect(() => {
+    // First screen is on the page: let the launch splash (index.html, installed app only) fade out.
+    requestAnimationFrame(() => (window as unknown as { __talaLaunchReady?: () => void }).__talaLaunchReady?.())
+  }, [])
+  return null
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <PwaRouteEffects />
       <Routes>
         <Route path="/" element={<StartScreen />} />
         <Route path="/pahintulot" element={<ConsentScreen />} />

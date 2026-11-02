@@ -17,16 +17,28 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
+      // Installable app. background_color = the launch splash in index.html, so the phone's own
+      // start screen blends into it. Icons: public/icons (made by .scratch/pwa/icons.mjs).
       manifest: {
+        id: '/',
         name: 'Tala-Salitaan',
         short_name: 'Tala-Salitaan',
+        description: 'Larong pang-bokabularyo sa Filipino',
         lang: 'fil',
-        display: 'standalone',
+        dir: 'ltr',
+        categories: ['education', 'games', 'kids'],
+        display: 'fullscreen',
+        display_override: ['fullscreen', 'standalone'],
         orientation: 'any',
-        background_color: '#8fd3f7',
-        theme_color: '#4f46e5',
+        background_color: '#5aa9ee',
+        theme_color: '#5aa9ee',
         start_url: '/',
-        icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }],
+        scope: '/',
+        icons: [
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webp,woff,woff2,glb,wasm}', 'draco/*.js'],
