@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Pupil flow: SIMULAN -> CONCENT -> PUPIL LOGIN -> pick section -> TALA-PANGALAN -> map.
+ * Pupil flow: SIMULAN -> PUPIL LOGIN -> pick section -> TALA-PANGALAN -> PAHINTULOT (login) -> map.
  * The same name in the same section continues where that pupil stopped.
  */
 class PupilAuthController extends Controller

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { teacherApi } from '../lib/api'
 import { Icon } from './TIcon'
 
-/** The consent text shown inside the CONCENT panel before anyone plays. */
+/** The consent text shown inside the PAHINTULOT panel before a pupil plays. */
 export function SettingsPage() {
   const [text, setText] = useState<string | null>(null)
   const [status, setStatus] = useState<string | null>(null)
@@ -18,7 +18,7 @@ export function SettingsPage() {
     try {
       const r = await teacherApi.saveSettings(text)
       setText(r.consent_text)
-      setStatus('Nai-save. Makikita na ito sa CONCENT screen.')
+      setStatus('Nai-save. Makikita na ito sa PAHINTULOT screen.')
     } catch {
       setStatus('Hindi na-save.')
     } finally {
@@ -32,7 +32,7 @@ export function SettingsPage() {
         <div>
           <h1 className="t-title">Pahintulot (Consent)</h1>
           <p className="t-lead">
-            Ito ang babasahin ng bata (o ng magulang) sa CONCENT screen bago pindutin ang SUMASANGAYON. Gamitin ang
+            Ito ang babasahin ng bata (o ng magulang) sa PAHINTULOT screen bago pindutin ang SUMASANGAYON. Gamitin ang
             assent/consent na nasa inyong research paper. Mag-iwan ng blangkong linya para sa bagong talata.
           </p>
         </div>

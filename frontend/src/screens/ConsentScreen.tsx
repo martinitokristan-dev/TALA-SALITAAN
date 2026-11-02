@@ -14,7 +14,8 @@ const DEFAULT_CONSENT =
   'Ako ay pumapayag na maglaro ng Tala-Salitaan. Alam kong ang aking mga sagot ay titingnan ng aking guro upang matulungan akong matuto ng mga bagong salita.'
 
 /**
- * Design: brick frame with the CONCENT title, the agreement text, and SUMASANGAYON.
+ * Design: brick frame with the PAHINTULOT title (the design said "CONCENT"), the agreement text,
+ * and SUMASANGAYON.
  * Comes after TALA-PANGALAN ("Ikaw ba ito?"); SUMASANGAYON signs the pupil in, so nothing is
  * saved for a pupil who did not agree.
  */
@@ -69,7 +70,7 @@ export function ConsentScreen() {
 
       <section className="consent-frame" style={{ backgroundImage: BRICK_TILE }} aria-labelledby="consent-title">
         <h1 id="consent-title" className="consent-title">
-          <OutlinedText text="CONCENT" className="consent-title-text" />
+          <OutlinedText text="PAHINTULOT" className="consent-title-text" />
         </h1>
         <div className="consent-paper" style={{ backgroundImage: PALE_BRICK_TILE }}>
           <div className="consent-text">

@@ -55,7 +55,7 @@
 .login-label input:focus { outline: 3px solid var(--title-violet); outline-offset: 2px; }
 .login-error { margin: 0; color: #b3261e; font-weight: 700; font-size: 17px; }
 
-/* ── Consent (CONCENT) ──────────────────────────────────── */
+/* ── Consent (PAHINTULOT) ───────────────────────────────── */
 .consent-scene {
   --u: min(1vw, 0.709dvh);
   position: relative;
@@ -105,7 +105,7 @@
   margin: 0;
   font-family: var(--font-title);
   font-weight: 400;
-  font-size: calc(6.6 * var(--u));
+  font-size: calc(6 * var(--u)); /* "PAHINTULOT" (10 letters) stays inside the brick frame */
   white-space: nowrap;
 }
 .consent-title-text { --outline-color: #7a3a00; --stroke: 0.18em; --drop: 0.06em; }
@@ -222,7 +222,7 @@
   .scene-actions .nm-start { flex: 0 0 auto; width: auto; min-width: 150px; padding: 0 18px; }
 }
 
-/* narrow phones: the CONCENT frame starts below the BUMALIK button */
-@media (max-width: 380px) {
+/* phones: the PAHINTULOT frame starts below the BUMALIK button (the long title would touch it) */
+@media (max-width: 620px) {
   .consent-scene { padding-top: 64px; }
 }

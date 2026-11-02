@@ -10,7 +10,7 @@ class SettingsController extends Controller
 {
     public const DEFAULT_CONSENT = 'Ako ay pumapayag na maglaro ng Tala-Salitaan. Alam kong ang aking mga sagot ay titingnan ng aking guro upang matulungan akong matuto ng mga bagong salita.';
 
-    /** Public: the CONCENT screen is shown before anyone logs in. */
+    /** Public: the PAHINTULOT screen is shown before a pupil logs in. */
     public function consent(): JsonResponse
     {
         return response()->json([

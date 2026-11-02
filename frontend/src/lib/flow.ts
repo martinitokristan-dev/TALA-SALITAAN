@@ -2,7 +2,7 @@ import type { CharacterKind } from './types'
 
 /**
  * Pupil sign-in flow:
- * SIMULAN -> PUPIL LOGIN -> section -> TALA-PANGALAN (+ "Ikaw ba ito?") -> CONCENT (SUMASANGAYON
+ * SIMULAN -> PUPIL LOGIN -> section -> TALA-PANGALAN (+ "Ikaw ba ito?") -> PAHINTULOT (SUMASANGAYON
  * signs in) -> PILIIN ANG KARAKTER -> map.
  */
 const KEYS = {

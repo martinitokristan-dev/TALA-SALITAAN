@@ -12,7 +12,7 @@ import { Star, StarDefs } from '../ui/StarRow'
 
 /**
  * Design: TALA-PANGALAN, "ILAGAY ANG PANGALAN NG MANLALARO". Comes after choosing the section.
- * After "Ikaw ba ito?" the pupil goes to CONCENT; SUMASANGAYON there signs them in.
+ * After "Ikaw ba ito?" the pupil goes to PAHINTULOT; SUMASANGAYON there signs them in.
  */
 export function NameScreen() {
   const navigate = useNavigate()
@@ -56,7 +56,7 @@ export function NameScreen() {
     setError(e instanceof ApiError ? (e.field('name') ?? e.message) : 'May problema. Subukang muli.')
   }
 
-  /** Step 2 (IPAGPATULOY / MAGSIMULA): on to CONCENT. Nothing is saved until SUMASANGAYON. */
+  /** Step 2 (IPAGPATULOY / MAGSIMULA): on to PAHINTULOT. Nothing is saved until SUMASANGAYON. */
   function toConsent(confirmedName: string) {
     flow.setPendingName(confirmedName)
     navigate('/pahintulot')

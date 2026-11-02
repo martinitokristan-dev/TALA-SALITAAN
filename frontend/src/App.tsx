@@ -36,7 +36,7 @@ function PwaRouteEffects() {
 
 /**
  * Pupil: / (SIMULAN) -> /login (PUPIL LOGIN) -> /pupil (section) -> /pupil/pangalan (TALA-PANGALAN)
- *        -> /pahintulot (CONCENT; SUMASANGAYON signs in) -> /pupil/karakter (PILIIN ANG KARAKTER) -> /mapa
+ *        -> /pahintulot (PAHINTULOT; SUMASANGAYON signs in) -> /pupil/karakter (PILIIN ANG KARAKTER) -> /mapa
  * Teacher: /login -> /teacher/login -> /teacher/...
  */
 export default function App() {
