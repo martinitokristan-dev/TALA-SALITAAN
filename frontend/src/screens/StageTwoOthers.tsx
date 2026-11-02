@@ -12,6 +12,7 @@ import {
 } from '@dnd-kit/core'
 import { useMemo, useState } from 'react'
 import { ApiError, pupilApi } from '../lib/api'
+import { optimizeImageUrl } from '../lib/cloudinaryImage'
 import { FEEDBACK_LINE, feedbackLine } from '../lib/feedback'
 import type { AnswerResponse, SentenceGroup, SituationItem } from '../lib/types'
 import { Icon } from '../ui/Icon'
@@ -322,7 +323,7 @@ export function SituationStage({
         <span>{item.word.toUpperCase()}</span>
       </div>
       <div className="pl-story">
-        {item.image_url && <img src={item.image_url} alt="" />}
+        {item.image_url && <img src={optimizeImageUrl(item.image_url)!} alt="" />}
         <p>{item.situation}</p>
       </div>
       <div className="pl-answers">

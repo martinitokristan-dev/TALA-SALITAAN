@@ -14,6 +14,7 @@ import type {
 import type { CharacterKind } from './types'
 import type { FeedbackClipUrls, FeedbackKind } from './feedback'
 import { cache } from './cache'
+import { compressFormImages } from './compressImage'
 
 // Same origin in development (Vite proxies /api to Laravel). Set VITE_API_URL for other setups,
 // e.g. https://<service>.onrender.com/api. A URL without the /api part gets it added, because every
@@ -173,7 +174,8 @@ async function send<T>(role: Role | null, method: string, path: string, body?: u
 
   let payload: BodyInit | undefined
   if (body instanceof FormData) {
-    payload = body
+    // Teacher uploads: pictures are shrunk in the browser first (lib/compressImage.ts); audio is sent as is.
+    payload = await compressFormImages(body)
   } else if (body !== undefined) {
     headers['Content-Type'] = 'application/json'
     payload = JSON.stringify(body)

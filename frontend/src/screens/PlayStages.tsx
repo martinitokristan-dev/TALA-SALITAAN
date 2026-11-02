@@ -6,6 +6,7 @@
  */
 import { useState } from 'react'
 import { ApiError, pupilApi } from '../lib/api'
+import { optimizeImageUrl } from '../lib/cloudinaryImage'
 import { feedbackLine } from '../lib/feedback'
 import { play } from '../lib/sound'
 import type { AnswerResponse, JumbleItem, PictureItem } from '../lib/types'
@@ -92,7 +93,7 @@ export function JumbleStage({
   return (
     <div className="pl-jumble">
       <div className="pl-picture">
-        {item.image_url ? <img src={item.image_url} alt="Larawan ng salita" /> : <Icon name="image" size={60} />}
+        {item.image_url ? <img src={optimizeImageUrl(item.image_url)!} alt="Larawan ng salita" /> : <Icon name="image" size={60} />}
       </div>
 
       <div className={`pl-slots ${shake ? 'is-shaking' : ''} ${solved ? 'is-solved' : ''}`} aria-label="Sagot">
@@ -211,7 +212,7 @@ export function PictureStage({
               disabled={!!right || wrong.includes(c.key) || locked}
               aria-label={`Larawan ${i + 1}`}
             >
-              {c.image_url ? <img src={c.image_url} alt="" /> : <Icon name="image" size={40} />}
+              {c.image_url ? <img src={optimizeImageUrl(c.image_url)!} alt="" /> : <Icon name="image" size={40} />}
               {state === 'is-right' && <span className="pl-mark is-right"><Icon name="check" size={22} /></span>}
               {state === 'is-wrong' && <span className="pl-mark is-wrong"><Icon name="close" size={20} /></span>}
             </button>
